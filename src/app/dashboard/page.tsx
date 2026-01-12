@@ -105,6 +105,7 @@ export default function DashboardPage() {
   const [isTranscribingFile, setIsTranscribingFile] = useState(false);
   const [fileTranscriptionResult, setFileTranscriptionResult] = useState<string>("");
   const [selectedDialect, setSelectedDialect] = useState<string>("");
+  const [selectedVoiceStyle, setSelectedVoiceStyle] = useState<string>("en-ng");
 
   useEffect(() => {
     const token = (typeof window !== "undefined" && localStorage.getItem("voicing_token")) || "";
@@ -498,14 +499,15 @@ export default function DashboardPage() {
     }
   };
 
-  const handleTextToSpeech = async (text: string, sampleRate: number = 22050) => {
+  const handleTextToSpeech = async (text: string, sampleRate: number = 22050, voiceStyle: string = "en-ng") => {
     try {
       setIsGeneratingSpeech(true);
       setSpeechAudioUrl("");
-      
+
       const response = await client.textToSpeech({
         text: text,
-        sampleRate: sampleRate
+        sampleRate: sampleRate,
+        voiceStyle: voiceStyle
       } as any);
 
       if (response?.success) {
@@ -1127,12 +1129,34 @@ export default function DashboardPage() {
                     rows={3}
                   />
                 </div>
-                
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Voice Style
+                  </label>
+                  <select
+                    value={selectedVoiceStyle}
+                    onChange={(e) => setSelectedVoiceStyle(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none bg-white"
+                  >
+                    <option value="en-ng">Nigerian English</option>
+                    <option value="en-us">American English</option>
+                    <option value="en-gb">British English</option>
+                  </select>
+                  <p className="mt-1 text-xs text-gray-500">
+                    {selectedVoiceStyle === "en-ng"
+                      ? "Nigerian English accent with local intonation patterns"
+                      : selectedVoiceStyle === "en-gb"
+                      ? "British English accent"
+                      : "Standard American English accent"}
+                  </p>
+                </div>
+
                 <div className="flex gap-3">
                   <button
                     onClick={() => {
                       if (speechText.trim()) {
-                        handleTextToSpeech(speechText.trim(), 22050);
+                        handleTextToSpeech(speechText.trim(), 22050, selectedVoiceStyle);
                       } else {
                         show({ type: "error", title: "Input Required", message: "Please enter some text to synthesize" });
                       }
@@ -1146,11 +1170,11 @@ export default function DashboardPage() {
                   >
                     {isGeneratingSpeech ? 'Generating...' : 'Generate Speech'}
                   </button>
-                  
+
                   <button
                     onClick={() => {
                       if (speechText.trim()) {
-                        handleTextToSpeech(speechText.trim(), 16000);
+                        handleTextToSpeech(speechText.trim(), 16000, selectedVoiceStyle);
                       } else {
                         show({ type: "error", title: "Input Required", message: "Please enter some text to synthesize" });
                       }
