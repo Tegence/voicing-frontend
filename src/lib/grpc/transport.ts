@@ -9,11 +9,15 @@ export type GrpcTransportOptions = {
 
 export const createTransport = (opts?: GrpcTransportOptions) => {
   const {
-    baseUrl = process.env.NEXT_PUBLIC_GRPC_BASE_URL || "http://localhost:9090",
+    baseUrl = process.env.NEXT_PUBLIC_GRPC_BASE_URL,
     useBinaryFormat = true,
     credentials = "include",
     headers = {},
   } = opts || {};
+
+  if (!baseUrl) {
+    throw new Error("NEXT_PUBLIC_GRPC_BASE_URL environment variable is not defined");
+  }
 
   return createGrpcWebTransport({
     baseUrl,
